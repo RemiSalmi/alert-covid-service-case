@@ -1,16 +1,18 @@
 package com.polytech.alertcovidservicecase.models;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.sql.Timestamp;
 
 @Entity(name="positif")
 @Access(AccessType.FIELD)
+@IdClass(PositiveId.class)
 public class Positive {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id_user;
-    private Date date;
+
+    @Id
+    private Timestamp date;
 
     public long getId_user() {
         return id_user;
@@ -20,11 +22,11 @@ public class Positive {
         this.id_user = id_user;
     }
 
-    public Date getDate() {
+    public Timestamp getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(Timestamp date) {
         this.date = date;
     }
 }
