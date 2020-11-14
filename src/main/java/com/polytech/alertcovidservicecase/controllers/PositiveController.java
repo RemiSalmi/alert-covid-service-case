@@ -48,7 +48,7 @@ public class PositiveController {
         Long id_user = this.getIdFromAuthorization(authorization);
         if (id_user.equals(positive.getId_user())){
             try {
-                this.postStreamLocationService_thenCorrect(positive.toJson());
+                this.postStreamLocationService_thenCorrect(positive.toJson(), authorization);
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new ResponseStatusException( HttpStatus .INTERNAL_SERVER_ERROR, "Something went wrong with the stream location service" ) ;
@@ -65,7 +65,7 @@ public class PositiveController {
     }
 
 
-    private void postStreamLocationService_thenCorrect(String json)
+    private void postStreamLocationService_thenCorrect(String json, String authorization)
             throws IOException {
         CloseableHttpClient client = HttpClients.createDefault();
         HttpPost httpPost = new HttpPost("http://localhost:9000/stream/location/positive");
@@ -75,6 +75,7 @@ public class PositiveController {
         httpPost.setEntity(entity);
         httpPost.setHeader("Accept", "application/json");
         httpPost.setHeader("Content-type", "application/json");
+        httpPost.setHeader("Authorization", authorization);
 
         CloseableHttpResponse response = client.execute(httpPost);
         assert(response.getStatusLine().getStatusCode() == 200);
