@@ -32,14 +32,18 @@ public class PositiveController {
     private PositiveRepository positiveRepository;
 
     @GetMapping
-    public List<Positive> getAll(@RequestHeader("Authorization") String authorization) {
-        System.out.println(getIdFromAuthorization(authorization));
+    public List<Positive> getAll() {
         return positiveRepository.findAll();
     }
 
     @GetMapping @RequestMapping("{id_user}")
-    public List<Positive> getAllForUser(@PathVariable Long id_user) {
-        return positiveRepository.findAllByIdUser(id_user);
+    public List<Positive> getAllForUser(@RequestHeader("Authorization") String authorization, @PathVariable Long id_user) {
+        Long idUserFromToken = this.getIdFromAuthorization(authorization);
+        if (id_user.equals(idUserFromToken)){
+            return positiveRepository.findAllByIdUser(id_user);
+        } else {
+            throw new ResponseStatusException( HttpStatus.UNAUTHORIZED, "Your not authorized to do this action" ) ;
+        }
     }
 
     @PostMapping
@@ -60,10 +64,14 @@ public class PositiveController {
     }
 
     @DeleteMapping
-    public void delete(@RequestBody final Positive positive) {
-        positiveRepository.delete(positive);
+    public void delete(@RequestHeader("Authorization") String authorization, @RequestBody final Positive positive) {
+        Long idUserFromToken = this.getIdFromAuthorization(authorization);
+        if (idUserFromToken.equals(positive.getId_user())){
+            positiveRepository.delete(positive);
+        } else {
+            throw new ResponseStatusException( HttpStatus.UNAUTHORIZED, "Your not authorized to do this action" ) ;
+        }
     }
-
 
     private void postStreamLocationService_thenCorrect(String json, String authorization)
             throws IOException {
@@ -102,6 +110,6 @@ public class PositiveController {
             e.printStackTrace();
             throw new ResponseStatusException( HttpStatus .INTERNAL_SERVER_ERROR, "can't get your id from your token" ) ;
         }
-
     }
+
 }
