@@ -59,11 +59,11 @@ public class PositiveController {
         if (id_user.equals(positive.getId_user())){
             try {
                 this.postStreamLocationService_thenCorrect(positive.toJson(), authorization);
+                return positiveRepository.saveAndFlush(positive);
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new ResponseStatusException( HttpStatus .INTERNAL_SERVER_ERROR, "Something went wrong with the stream location service" ) ;
             }
-            return positiveRepository.saveAndFlush(positive);
         } else {
             throw new ResponseStatusException( HttpStatus.UNAUTHORIZED, "Your not authorized to do this action" ) ;
         }
@@ -79,11 +79,12 @@ public class PositiveController {
         }
     }
 
+    /////////////////////////////// PRIVATE METHOD  /////////////////////////////////
+
     private void postStreamLocationService_thenCorrect(String json, String authorization)
             throws IOException {
         CloseableHttpClient client = HttpClients.createDefault();
         HttpPost httpPost = new HttpPost(kafkaUrl);
-        System.out.println();
 
         StringEntity entity = new StringEntity(json);
         httpPost.setEntity(entity);
@@ -92,6 +93,7 @@ public class PositiveController {
         httpPost.setHeader("Authorization", authorization);
 
         CloseableHttpResponse response = client.execute(httpPost);
+        this.handleStatusCodeHttp(response.getStatusLine().getStatusCode());
         assert(response.getStatusLine().getStatusCode() == 200);
         client.close();
     }
@@ -115,6 +117,15 @@ public class PositiveController {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
             throw new ResponseStatusException( HttpStatus .INTERNAL_SERVER_ERROR, "can't get your id from your token" ) ;
+        }
+    }
+
+    private void handleStatusCodeHttp(int statusCode) {
+        switch(statusCode/100) {
+            case 5:
+                throw new ResponseStatusException( HttpStatus.SERVICE_UNAVAILABLE, "some service are unavailable retry later" ) ;
+            case 4:
+                throw new ResponseStatusException( HttpStatus.INTERNAL_SERVER_ERROR, "some service are unavailable retry later" ) ;
         }
     }
 
