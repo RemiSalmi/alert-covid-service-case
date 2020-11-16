@@ -59,11 +59,11 @@ public class PositiveController {
         if (id_user.equals(positive.getId_user())){
             try {
                 this.postStreamLocationService_thenCorrect(positive.toJson(), authorization);
+                return positiveRepository.saveAndFlush(positive);
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new ResponseStatusException( HttpStatus .INTERNAL_SERVER_ERROR, "Something went wrong with the stream location service" ) ;
             }
-            return positiveRepository.saveAndFlush(positive);
         } else {
             throw new ResponseStatusException( HttpStatus.UNAUTHORIZED, "Your not authorized to do this action" ) ;
         }
@@ -78,6 +78,8 @@ public class PositiveController {
             throw new ResponseStatusException( HttpStatus.UNAUTHORIZED, "Your not authorized to do this action" ) ;
         }
     }
+
+    /////////////////////////////// PRIVATE METHOD  /////////////////////////////////
 
     private void postStreamLocationService_thenCorrect(String json, String authorization)
             throws IOException {
