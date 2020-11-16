@@ -12,6 +12,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -30,6 +31,11 @@ public class PositiveController {
 
     @Autowired
     private PositiveRepository positiveRepository;
+
+    @Value("${USER_URL}")
+    private String userUrl;
+    @Value("${KAFKA_URL}")
+    private String kafkaUrl;
 
     @GetMapping
     public List<Positive> getAll() {
@@ -76,7 +82,7 @@ public class PositiveController {
     private void postStreamLocationService_thenCorrect(String json, String authorization)
             throws IOException {
         CloseableHttpClient client = HttpClients.createDefault();
-        HttpPost httpPost = new HttpPost("http://localhost:9000/stream/location/positive");
+        HttpPost httpPost = new HttpPost(kafkaUrl);
         System.out.println();
 
         StringEntity entity = new StringEntity(json);
@@ -96,7 +102,7 @@ public class PositiveController {
         String email = jwt.getClaim("email").asString();
 
         var client = HttpClient.newHttpClient();
-        String url = "http://146.59.234.45:8081/users/" + email;
+        String url = userUrl + email;
         var request = HttpRequest.newBuilder(
                 URI.create(url))
                 .header("Authorization", authorization)
