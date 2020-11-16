@@ -85,7 +85,6 @@ public class PositiveController {
             throws IOException {
         CloseableHttpClient client = HttpClients.createDefault();
         HttpPost httpPost = new HttpPost(kafkaUrl);
-        System.out.println();
 
         StringEntity entity = new StringEntity(json);
         httpPost.setEntity(entity);
@@ -94,6 +93,7 @@ public class PositiveController {
         httpPost.setHeader("Authorization", authorization);
 
         CloseableHttpResponse response = client.execute(httpPost);
+        this.handleStatusCodeHttp(response.getStatusLine().getStatusCode());
         assert(response.getStatusLine().getStatusCode() == 200);
         client.close();
     }
@@ -117,6 +117,15 @@ public class PositiveController {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
             throw new ResponseStatusException( HttpStatus .INTERNAL_SERVER_ERROR, "can't get your id from your token" ) ;
+        }
+    }
+
+    private void handleStatusCodeHttp(int statusCode) {
+        switch(statusCode/100) {
+            case 5:
+                throw new ResponseStatusException( HttpStatus.SERVICE_UNAVAILABLE, "some service are unavailable retry later" ) ;
+            case 4:
+                throw new ResponseStatusException( HttpStatus.INTERNAL_SERVER_ERROR, "some service are unavailable retry later" ) ;
         }
     }
 
